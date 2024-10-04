@@ -1,5 +1,6 @@
 package com.pprisam.backend.domain.user.repository;
 
+import com.pprisam.backend.domain.user.repository.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,7 +36,7 @@ public class UserEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private String status;
+    private UserStatus status;
 
     private LocalDateTime inactiveAt;
 
