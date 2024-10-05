@@ -9,6 +9,9 @@ services:
     container_name: ppurisam_backend
     networks:
       - ppurisam_network
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
 
   database:
     image: mysql:8.0
