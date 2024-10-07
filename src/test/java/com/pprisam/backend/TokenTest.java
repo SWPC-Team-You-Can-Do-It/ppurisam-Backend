@@ -1,10 +1,14 @@
 package com.pprisam.backend;
 
+import com.pprisam.backend.domain.token.converter.TokenConverter;
 import com.pprisam.backend.domain.token.helper.JwtTokenHelper;
+import com.pprisam.backend.domain.token.model.TokenDto;
+import com.pprisam.backend.domain.token.model.TokenResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,5 +35,28 @@ public class TokenTest {
 
         //then
         assertEquals(userId, resultMap.get("userId"));
+    }
+
+    @Test
+    void convert() {
+        // given
+        TokenConverter tokenConverter = new TokenConverter();
+
+        TokenDto accessToken = new TokenDto("accessTokenValue", LocalDateTime.now().plusMinutes(10));
+        TokenDto refreshToken = new TokenDto("refreshTokenValue", LocalDateTime.now().plusDays(10));
+
+        // when
+        TokenResponse response = tokenConverter.toResponse(accessToken, refreshToken);
+
+        // then
+        assertNotNull(response);
+
+        System.out.println("[Response - accessToken] : " + response.getAccessToken() + " / " + response.getAccessTokenExpiredAt());
+        assertEquals("accessTokenValue", response.getAccessToken());
+        assertEquals(accessToken.getExpiredAt(), response.getAccessTokenExpiredAt());
+
+        System.out.println("[Response - refreshToken] : " + response.getRefreshToken() + " / " + response.getRefreshTokenExpiredAt());
+        assertEquals("refreshTokenValue", response.getRefreshToken());
+        assertEquals(refreshToken.getExpiredAt(), response.getRefreshTokenExpiredAt());
     }
 }
