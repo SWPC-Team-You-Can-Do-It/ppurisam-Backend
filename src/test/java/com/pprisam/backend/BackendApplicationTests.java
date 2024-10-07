@@ -10,4 +10,8 @@ class BackendApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void 토큰검증(){
+
+	}
 }
