@@ -12,6 +12,9 @@ services:
     environment:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - TOKEN_SECRET_KEY=${TOKEN_SECRET_KEY}
+      - ACCESSTOKEN_PLUSTHOUR=${ACCESSTOKEN_PLUSTHOUR}
+      - REFRESHTOKEN_PLUSHOUR=${REFRESHTOKEN_PLUSHOUR}
 
   database:
     image: mysql:8.0
@@ -21,6 +24,7 @@ services:
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
     ports:
       - "3306:3306"
     volumes:
