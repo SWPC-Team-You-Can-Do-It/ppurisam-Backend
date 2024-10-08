@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class UserEntity {
 
     @Id
-    @GeneratedValue // 기본키 생성 전략인데 나중에 수정 필요할수도 default = auto
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // 기본키 생성 전략, user_seq 테이블 삭제
     private Long id;
 
     @Column(nullable = false)
