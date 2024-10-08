@@ -1,9 +1,12 @@
 package com.pprisam.backend.config.web;
 
 import com.pprisam.backend.interceptor.AuthorizationInterceptor;
+import com.pprisam.backend.resolver.UserSessionResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.List;
 public class WebConfig implements WebMvcConfigurer {
 
     private final AuthorizationInterceptor authorizationInterceptor;
+    private final UserSessionResolver userSessionResolver;
 
     //회원가입, 로그인 등 비로그인한 상태
     private List<String> OPEN_API = List.of(
@@ -42,5 +46,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(DEFAULT_EXCLUDE)
                 .excludePathPatterns(SWAGGER)
         ;
+    }
+
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
+        resolvers.add(userSessionResolver);
+    }
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**") // /images 요청에 따라
+                .addResourceLocations("classpath:/static/images/");
     }
 }
