@@ -20,7 +20,7 @@ public class UserConverter {
     }
 
     // 응답을 내려주기 위해 엔티티를 Response로 변환
-    public UserResponse toDto(UserEntity userEntity) {
+    public UserResponse toResponse(UserEntity userEntity) {
         return UserResponse.builder()
                 .id(userEntity.getId())
                 .name(userEntity.getName())

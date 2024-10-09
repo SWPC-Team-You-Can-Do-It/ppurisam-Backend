@@ -22,7 +22,7 @@ public class UserBusiness {
     public UserResponse register(UserRequest request) {
         var userEntity=userConverter.toEntity(request); // 요청을 엔티티로 변환
         var newEntity=userService.register(userEntity); // 엔티티를 레포에 저장
-        var userResponse=userConverter.toDto(newEntity); // 저장한 값을 response로 변환
+        var userResponse=userConverter.toResponse(newEntity); // 저장한 값을 response로 변환
 
         return userResponse;
     }
