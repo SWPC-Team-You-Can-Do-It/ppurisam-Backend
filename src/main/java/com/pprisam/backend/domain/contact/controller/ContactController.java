@@ -9,26 +9,35 @@ import com.pprisam.backend.domain.user.model.User;
 import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/open-api/contacts")   // jwt 관련 설정 세팅전 임시 endpoint 설정
 public class ContactController {
     @Autowired
     private ContactService contactService;
+    @Autowired
+    private ContactRepository contactRepository;
 
     @PostMapping("")
     public ResponseEntity<ContactEntity> createContact(
-            @RequestBody ContactDTO contactDTO
-//            @Parameter(hidden = true)
-//            @UserSession User user
+            @RequestBody ContactDTO contactDTO,
+            @Parameter(hidden = true)
+            @UserSession User user
     ) {
 
         ContactEntity savedContact = contactService.save(contactDTO);
         return ResponseEntity.ok(savedContact);
+    }
 
+    @GetMapping("")
+    public ResponseEntity<List<ContactEntity>> getAllContacts(
+//            @Parameter(hidden = true)
+//            @UserSession User user
+    ){
+        List<ContactEntity> contacts = contactService.findAll(); // 전체 연락처 조회
+        return ResponseEntity.ok(contacts);
     }
 }

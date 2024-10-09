@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ContactService {
@@ -23,5 +25,9 @@ public class ContactService {
 
         // Repository를 통해 DB에 저장
         return contactRepository.save(contactEntity);
+    }
+
+    public List<ContactEntity> findAll() {
+        return contactRepository.findAll();
     }
 }
