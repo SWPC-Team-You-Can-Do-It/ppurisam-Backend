@@ -1,4 +1,4 @@
-package com.pprisam.backend.domain.contact.repository;
+package com.pprisam.backend.domain.contact.repository.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
