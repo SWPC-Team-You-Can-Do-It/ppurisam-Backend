@@ -3,9 +3,7 @@ package com.pprisam.backend.domain.user.business;
 import com.pprisam.backend.domain.token.business.TokenBusiness;
 import com.pprisam.backend.domain.token.model.TokenResponse;
 import com.pprisam.backend.domain.user.converter.UserConverter;
-import com.pprisam.backend.domain.user.model.UserResponse;
-import com.pprisam.backend.domain.user.model.UserLoginRequest;
-import com.pprisam.backend.domain.user.model.UserRequest;
+import com.pprisam.backend.domain.user.model.*;
 import com.pprisam.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,5 +30,31 @@ public class UserBusiness {
         var userEntity=userService.login(userLoginRequest.getEmail(), userLoginRequest.getPassword());
 
         return tokenBusiness.issueToken(userEntity);
+    }
+
+    // 사용자 정보 조회
+    public UserResponse getUserInfo(User user) {
+        var userEntity = userConverter.toEntity(user);
+        var userResponse = userConverter.toResponse(userEntity);
+
+        return userResponse;
+    }
+
+    // 사용자 정보 수정
+    public UserResponse updateUserInfo(User user, UserUpdateRequest userUpdateRequest) {
+        var updateEntity = userConverter.toEntity(user, userUpdateRequest);
+        var newEntity = userService.update(updateEntity);
+        var userResponse = userConverter.toResponse(newEntity);
+
+        return userResponse;
+    }
+
+    // 사용자 탈퇴
+    public UserResponse setUserInactive(User user) {
+        var userEntity = userConverter.toEntity(user);
+        var deleteEntity = userService.delete(userEntity);
+        var userResponse = userConverter.toResponse(deleteEntity);
+
+        return userResponse;
     }
 }

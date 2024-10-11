@@ -1,6 +1,5 @@
 package com.pprisam.backend.domain.user.service;
 
-import com.pprisam.backend.domain.user.model.UserLoginRequest;
 import com.pprisam.backend.domain.user.repository.UserEntity;
 import com.pprisam.backend.domain.user.repository.UserRepository;
 import com.pprisam.backend.domain.user.repository.enums.UserStatus;
@@ -30,8 +29,6 @@ public class UserService {
         return Optional.ofNullable(userEntity)
                 .map(entity->{
                     entity.setStatus(UserStatus.REGISTERED);
-                    entity.setCreatedAt(LocalDateTime.now());
-                    entity.setUpdatedAt(LocalDateTime.now());
                     return userRepository.save(entity);
                 })
                 .orElseThrow(()->new NullPointerException("user null"));
@@ -41,4 +38,23 @@ public class UserService {
         return getUserWithThrow(email, password);
     }
 
+    // 사용자 정보 수정
+    public UserEntity update(UserEntity userEntity) {
+        // 변경된 사용자 정보를 DB에 저장
+        return Optional.ofNullable(userEntity)
+                .map(entity -> userRepository.save(entity))
+                .orElseThrow(()->new RuntimeException("UserEntity Null"));
+    }
+
+    // 사용자 탈퇴
+    public UserEntity delete(UserEntity userEntity) {
+        // Soft Delete 작업
+        return Optional.ofNullable(userEntity)
+                .map(entity -> {
+                    entity.setStatus(UserStatus.UNREGISTERED);
+                    entity.setInactiveAt(LocalDateTime.now());
+                    return userRepository.save(entity);
+                })
+                .orElseThrow(() -> new RuntimeException("UserEntity Null"));
+    }
 }
