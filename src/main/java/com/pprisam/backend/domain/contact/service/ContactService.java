@@ -1,10 +1,12 @@
 package com.pprisam.backend.domain.contact.service;
 
-import com.pprisam.backend.domain.contact.model.ContactDTO;
+import com.pprisam.backend.domain.contact.model.ContactRequest;
+import com.pprisam.backend.domain.contact.model.ContactResponse;
 import com.pprisam.backend.domain.contact.repository.ContactRepository;
 import com.pprisam.backend.domain.contact.repository.entity.ContactEntity;
 import com.pprisam.backend.domain.user.model.UserIdResponse;
 import com.pprisam.backend.domain.user.repository.UserEntity;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +19,7 @@ public class ContactService {
     private final ContactRepository contactRepository;
 
     // DTO에서 데이터 출력
-    public ContactDTO save(ContactDTO contactDTO, UserIdResponse userIdResponse) {
+    public ContactResponse save(ContactRequest contactDTO, UserIdResponse userIdResponse) {
         UserEntity userEntity = UserEntity.builder()
                 .id(userIdResponse.getId())
                 .build();
@@ -36,8 +38,9 @@ public class ContactService {
         return toResponse(savedContact);
     }
 
-    private ContactDTO toResponse(ContactEntity contactEntity) {
-        return ContactDTO.builder()
+    private ContactResponse toResponse(ContactEntity contactEntity) {
+        return ContactResponse.builder()
+                .id(contactEntity.getId())
                 .userId(contactEntity.getUserEntity().getId())  // userEntity의 id만 반환
                 .name(contactEntity.getName())
                 .phoneNumber(contactEntity.getPhoneNumber())
@@ -45,9 +48,15 @@ public class ContactService {
                 .build();
     }
 
-    public List<ContactDTO> findAll() {
+    public List<ContactResponse> findAll() {
         return contactRepository.findAll().stream()
                 .map(this::toResponse)  // ContactEntity를 ContactResponse로 변환
                 .collect(Collectors.toList());
+    }
+
+    public ContactResponse findById(Long id) {
+        return contactRepository.findById(id)
+                .map(this::toResponse)
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 id: " + id)); // 예외 발생
     }
 }
