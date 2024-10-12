@@ -5,20 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ContactRequest {
+public class GroupRequest {
     @NotBlank
     private String name;
-
-    @NotBlank
-    private String phoneNumber;
-
-    @NotBlank
-    private String memo;
-
 }
