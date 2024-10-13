@@ -21,4 +21,7 @@ public class ContactRequest {
     @NotBlank
     private String memo;
 
+    @NotBlank
+    private Long groupId;
+
 }
