@@ -34,9 +34,23 @@ public class ContactEntity {
 
     private String memo;
 
+    @OneToMany(mappedBy = "contactEntity", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupMemberEntity> groupMembers;
+
     @CreationTimestamp // 레코드가 생성될 때 자동으로 해당 필드에 현재 날짜와 시간을 기록
     private LocalDateTime createdAt;
 
     @UpdateTimestamp // 레코드가 수정될 때 자동으로 해당 필드에 현재 날짜와 시간을 기록
     private LocalDateTime updatedAt;
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
