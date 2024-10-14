@@ -4,6 +4,7 @@ import com.pprisam.backend.config.annotation.UserSession;
 import com.pprisam.backend.domain.contact.model.ContactRequest;
 import com.pprisam.backend.domain.contact.model.ContactResponse;
 import com.pprisam.backend.domain.contact.repository.document.ContactDocument;
+import com.pprisam.backend.domain.contact.service.ContactSearchService;
 import com.pprisam.backend.domain.contact.service.ContactService;
 import com.pprisam.backend.domain.user.model.User;
 import com.pprisam.backend.domain.user.model.UserIdResponse;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -21,6 +23,9 @@ import java.util.List;
 public class ContactController {
     @Autowired
     private ContactService contactService;
+
+    @Autowired
+    private ContactSearchService contactSearchService;
 
     @PostMapping("")
     public ResponseEntity<ContactResponse> createContact(
@@ -59,7 +64,6 @@ public class ContactController {
         return ResponseEntity.noContent().build(); // 204 No Content 반환
     }
 
-
     @GetMapping("")
     public ResponseEntity<List<ContactResponse>> getAllContacts(){
         List<ContactResponse> contacts = contactService.findAll(); // 전체 연락처 조회
@@ -69,5 +73,17 @@ public class ContactController {
     @GetMapping("/{id}")
     public ResponseEntity<ContactResponse> getContactById(@PathVariable Long id){
         return ResponseEntity.ok(contactService.findById(id));
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ContactDocument>> searchContactsByNameOrPhoneNumber(@RequestParam String keyword) {
+        try {
+            List<ContactDocument> results = contactSearchService.searchContacts(keyword);
+            return ResponseEntity.ok(results);
+        } catch (Exception e) {
+            // 여기서 구체적인 에러 로그를 추가
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Collections.emptyList());
+        }
     }
 }

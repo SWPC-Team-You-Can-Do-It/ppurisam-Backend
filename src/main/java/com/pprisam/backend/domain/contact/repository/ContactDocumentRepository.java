@@ -16,4 +16,6 @@ public interface ContactDocumentRepository extends ElasticsearchRepository<Conta
     // 그룹 이름으로 검색하는 메서드 예시
     List<ContactDocument> findByGroupsNameContaining(String groupName);
     void deleteByContactId(Long userId);
+
+    List<ContactDocument> findByNameContainingOrPhoneNumberContaining(String name, String phoneNumber);
 }
