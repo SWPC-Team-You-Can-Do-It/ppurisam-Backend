@@ -24,6 +24,9 @@ services:
       - SPRING_ELASTICSEARCH_PASSWORD=1234
       - CSR_CLIENT_ID=${CSR_CLIENT_ID}
       - CSR_CLIENT_SECRET=${CSR_CLIENT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+        - .:/app/image
 
   database:
     image: mysql:8.0

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class UserApiController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserApiController.class);
     private final UserBusiness userBusiness;
 
     // 사용자 정보 조회
