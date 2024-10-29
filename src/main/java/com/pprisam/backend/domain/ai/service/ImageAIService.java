@@ -17,7 +17,6 @@ import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
-import java.util.Base64;
 
 @Slf4j
 @Service
@@ -29,30 +28,10 @@ public class ImageAIService {
         this.openAiService = new OpenAiService(apiKey, Duration.ofSeconds(30));
     }
 
-    // 생성된 이미지 URL만 반환
+    // 이미지 생성 후, 로컬에 저장하여 그 경로를 반환
     public String generate(String prompt) {
         log.info("prompt : {}", prompt);
 
-        // 요청 설정
-        CreateImageRequest request = CreateImageRequest.builder()
-                .prompt(prompt) // 프롬프트 설정
-                .model("dall-e-3")  // DALL-E 3 모델 사용
-                .n(1) // 생성할 이미지 수
-                .build()
-                ;
-
-        // 이미지 생성 요청
-        ImageResult response = openAiService.createImage(request);
-
-        // 생성된 이미지 URL 반환
-        return response.getData().getFirst().getUrl();
-    }
-
-    // 뿌리오 API에 맞게 반환 - JPEG형식을 Base64인코딩 & 생성된 이미지 확인하기 위해 로컬 저장
-    public String generate2(String prompt) {
-        log.info("prompt : {}", prompt);
-
-        // 요청 설정
         CreateImageRequest request = CreateImageRequest.builder()
                 .prompt(prompt) // 프롬프트 설정
                 .model("dall-e-3")  // DALL-E 3 모델 사용
@@ -79,33 +58,23 @@ public class ImageAIService {
             BufferedImage image = ImageIO.read(url);
 
             // 이미지 파일 크기 조정 (필요한 경우)
-            image = resizeImage(image, 300 * 1024); // 300KB
+            image = reduceFileSize(image, 300 * 1024); // 300KB
 
-            // 생성된 이미지 확인하기 위해 로컬에 저장
-            saveImage(image);
-
-            // 이미지를 JPEG 형식의 바이트 배열로 변환
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(image, "jpg", baos);
-            byte[] imageBytes = baos.toByteArray();
-
-            // Base64로 인코딩
-            String base64Image = Base64.getEncoder().encodeToString(imageBytes);
-            return base64Image;
+            return saveImage(image);
         } catch (Exception e) {
             log.error("이미지 처리 중 오류 발생", e);
             return null;
         }
     }
 
-    // 이미지 파일 크기 조정
-    private BufferedImage resizeImage(BufferedImage originalImage, int maxSizeInBytes) throws Exception {
-        BufferedImage resizedImage = originalImage;
+    // 이미지 파일 용량 조정
+    private BufferedImage reduceFileSize (BufferedImage originalImage, int maxSizeInBytes) throws Exception {
+        BufferedImage modifiedImage = originalImage;
         float quality = 1.0f;
 
         while (true) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(resizedImage, "jpg", baos);
+            ImageIO.write(modifiedImage, "jpg", baos);
 
             if (baos.size() <= maxSizeInBytes) {
                 log.info("이미지 파일 크기가 {} 이내입니다 (이미지 크기 : {})", maxSizeInBytes, baos.size());
@@ -121,10 +90,10 @@ public class ImageAIService {
             baos.reset();
 
             // 품질을 낮추어 파일 크기 줄이기
-            resizedImage = compressImage(originalImage, quality);
+            modifiedImage = compressImage(originalImage, quality);
         }
 
-        return resizedImage;
+        return modifiedImage;
     }
 
     // 이미지 압축
@@ -164,16 +133,18 @@ public class ImageAIService {
     }
 
     // 이미지를 로컬에 저장
-    private void saveImage(BufferedImage image) throws Exception {
+    private String saveImage(BufferedImage image) throws Exception {
         int count = 1;
         File outputFile;
+
         do {
-            outputFile = new File("image/ai_image_" + count + ".jpg");
+            outputFile = new File("/app/static/images/ai_image_" + count + ".jpg");
             count++;
         } while (outputFile.exists());
 
         // 이미지 저장
         ImageIO.write(image, "jpg", outputFile);
-        log.info("이미지를 저장했습니다: {}", outputFile.getAbsolutePath());
+
+        return "/images/ai_image_" + (count - 1) + ".jpg";
     }
 }

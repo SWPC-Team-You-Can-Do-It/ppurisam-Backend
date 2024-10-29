@@ -16,15 +16,9 @@ public class ImageAIController {
 
     private final ImageAIService imageAIService;
 
-    // 생성된 이미지 URL만 반환
-    @PostMapping("/url")
-    public String generateImage(@Valid @RequestBody ImageAIRequest imageRequest) {
+    // 이미지 생성
+    @PostMapping()
+    public String generateImage (@Valid @RequestBody ImageAIRequest imageRequest) {
         return imageAIService.generate(imageRequest.getPrompt());
-    }
-
-    // 뿌리오 API에 맞게 반환 - JPEG형식을 Base64인코딩 & 생성된 이미지 확인하기 위해 로컬 저장
-    @PostMapping("/ppurio")
-    public String generateImage2(@Valid @RequestBody ImageAIRequest imageRequest) {
-        return imageAIService.generate2(imageRequest.getPrompt());
     }
 }

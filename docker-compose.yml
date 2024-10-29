@@ -26,7 +26,7 @@ services:
       - CSR_CLIENT_SECRET=${CSR_CLIENT_SECRET}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     volumes:
-        - .:/app/image
+      - ./src/main/resources/static/images:/app/static/images
 
   database:
     image: mysql:8.0
