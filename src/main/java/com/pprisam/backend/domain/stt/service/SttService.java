@@ -114,8 +114,6 @@ public class SttService {
 
 
     public SttResponse speechToText(MultipartFile file) {
-//        log.info("클라이언트 id {}", clientId);
-//        log.info("클라이언트 시크릿 {}", clientSecret);
 
         File tempFile = null;
         try {
@@ -126,12 +124,6 @@ public class SttService {
 
             // WEBM 파일을 MP3로 변환하여 클로바 API와 호환되도록 조정
             tempFile = convertToMp3(file);
-
-            // MultipartFile을 File 객체로 변환하여 처리 (임시 파일 생성)
-            // 임시 파일 생성
-//            File tempFile = File.createTempFile("upload-", ".mp3");
-            // 업로드된 파일을 임시 파일에 저장
-//            file.transferTo(tempFile);
 
             // URL 생성
             String language = "Kor";        // 언어 코드 ( Kor, Jpn, Eng, Chn )
