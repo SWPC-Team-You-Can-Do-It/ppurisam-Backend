@@ -24,6 +24,11 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
+# FFmpeg 설치
+RUN apt-get update && \
+    apt-get install -y ffmpeg && \
+    rm -rf /var/lib/apt/lists/*
+
 # 빌드된 JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
 
