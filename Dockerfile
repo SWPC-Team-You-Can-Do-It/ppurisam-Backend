@@ -24,10 +24,16 @@ FROM eclipse-temurin:21-jdk
 
 WORKDIR /app
 
-# FFmpeg 설치
+# FFmpeg 및 tzdata 설치
 RUN apt-get update && \
-    apt-get install -y ffmpeg && \
+    apt-get install -y ffmpeg tzdata && \
+    ln -fs /usr/share/zoneinfo/Asia/Seoul /etc/localtime && \
+    echo "Asia/Seoul" > /etc/timezone && \
+    dpkg-reconfigure --frontend noninteractive tzdata && \
     rm -rf /var/lib/apt/lists/*
+
+# 시간대 환경 변수 설정 (선택 사항)
+ENV TZ=Asia/Seoul
 
 # 빌드된 JAR 파일 복사
 COPY --from=builder /app/build/libs/*.jar app.jar
