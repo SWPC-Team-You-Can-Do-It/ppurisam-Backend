@@ -37,10 +37,10 @@ public class TextAIService {
                 "Make sure the content of the message is clear and concise, and the flow of the sentences is natural. " +
                 "Include additional details if necessary to make the message more informative and appealing. " +
                 "Use a respectful tone when writing the message, and highlight any important information that should stand out. " +
-                "Please ensure the message does not exceed 500 characters in length. " +
+                "Please ensure the message is at least 150 characters long and does not exceed 1000 characters in length. " +
+                "Under no circumstances should you ask any clarifying questions or seek additional information regarding this request. " +
                 "Generate the message based on the following text: \"" + inputText + "\" " +
                 "Please respond in Korean.";
-
 
         // model 지정
         Map<String, Object> requestBody = new HashMap<>();
@@ -74,5 +74,54 @@ public class TextAIService {
                 .generatedText(generatedText)
                 .build()
                 ;
+    }
+
+    public TextAIResponse editText(String textPre, String textRefactor) throws JsonProcessingException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + openAiApiKey);
+        headers.set("Content-Type", "application/json");
+
+        // 수정 요청 프롬프트 생성
+        String prompt = "You are an advanced text message revision service. " +
+                "The user has provided feedback on a previously generated message and would like some modifications. " +
+                "Based on the original message and the feedback provided, please revise the message while maintaining clarity, " +
+                "conciseness, and a natural flow. Ensure that the revised message does not exceed 1000 characters and is at least 150 characters long. " +
+                "Please use a respectful tone and implement any highlighted requirements from the user feedback. " +
+                "Under no circumstances should you ask any clarifying questions or seek additional information regarding this request. " +
+                "Original message: \"" + textPre + "\" " +
+                "User feedback: \"" + textRefactor + "\" " +
+                "Respond in Korean.";
+
+        // model 지정
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-4o-mini");
+
+        // 메시지 배열 추가 (system 역할 지정 가능)
+        requestBody.put("messages", new Object[]{
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        });
+        requestBody.put("max_tokens", 500);
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // API 호출
+        ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+
+        // JSON 데이터 가져오기
+        var responseBody = response.getBody();
+        log.info("ResponseBody: {}", responseBody);
+
+        // Jackson ObjectMapper를 사용하여 JSON 파싱
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(responseBody);
+
+        var modifiedText = root.path("choices").get(0).path("message").path("content").asText();
+
+        return TextAIResponse.builder()
+                .generatedText(modifiedText)
+                .build();
     }
 }
