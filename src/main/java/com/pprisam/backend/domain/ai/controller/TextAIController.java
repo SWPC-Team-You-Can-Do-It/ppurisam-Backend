@@ -1,6 +1,7 @@
 package com.pprisam.backend.domain.ai.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.pprisam.backend.domain.ai.model.TextAIEditRequest;
 import com.pprisam.backend.domain.ai.model.TextAIRequest;
 import com.pprisam.backend.domain.ai.model.TextAIResponse;
 import com.pprisam.backend.domain.ai.service.TextAIService;
@@ -23,5 +24,11 @@ public class TextAIController {
     public TextAIResponse generateText(@Valid @RequestBody TextAIRequest request) throws JsonProcessingException {
 
         return textAIService.generateText(request.getText());
+    }
+
+    @PostMapping("/edit")
+    public TextAIResponse editText(@Valid @RequestBody TextAIEditRequest request) throws JsonProcessingException {
+
+        return textAIService.editText(request.getTextPre(), request.getTextRefactor());
     }
 }
