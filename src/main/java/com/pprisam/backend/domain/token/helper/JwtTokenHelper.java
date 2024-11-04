@@ -91,15 +91,15 @@ public class JwtTokenHelper {
 
             if(e instanceof SignatureException){
                 // 토큰이 유효하지 않을때
-                throw new RuntimeException("에러 발생");
+                throw new RuntimeException("토큰 검증 중 유효하지 않은 토큰, 메시지: "+e.getMessage());
             }
             else if(e instanceof ExpiredJwtException){
                 //  만료된 토큰
-                throw new RuntimeException("에러 발생");
+                throw new RuntimeException("토큰 검증 중 만료된 토큰, 메시지: "+e.getMessage());
             }
             else{
                 // 그외 에러
-                throw new RuntimeException("에러 발생");
+                throw new RuntimeException("그외의 토큰 검증 에러: "+e.getMessage());
             }
         }
     }
