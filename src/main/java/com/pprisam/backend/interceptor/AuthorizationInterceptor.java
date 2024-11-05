@@ -39,15 +39,18 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         }
 
         // Request-Header에서 JWT 토큰을 추출
-        var accessToken = request.getHeader("authorization-token");
+        String authHeader = request.getHeader("Authorization");
 
-        // Token이 없을 경우 오류 처리
-        if(accessToken == null) {
-            throw new RuntimeException("Access Token Null");
+        // 토큰이 없거나 형식이 올바르지 않은 경우 오류 처리
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Access Token Null or Invalid Format");
         }
 
+        // "Bearer "를 제거하고 토큰 추출
+        String token = authHeader.substring(7);
+
         // 토큰 검증 후, User Id 반환
-        var userId = tokenBusiness.validationAccessToken(accessToken);
+        var userId = tokenBusiness.validationAccessToken(token);
 
         // User Id가 있으면, RequestContext에 User Id 저장
         // RequestContext : 요청에 대한 정보를 저장하고 관리하는 컨테이너 역할
