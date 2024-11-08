@@ -41,6 +41,16 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         // Request-Header에서 JWT 토큰을 추출
         String authHeader = request.getHeader("Authorization");
 
+        // 뿌리오 관련 요청인 경우 추가 토큰 적용
+        if (request.getRequestURI().startsWith("/api/ppurio/")) {
+            String ppurioToken = request.getHeader("Authorization-ppurio");
+
+            // 토큰 검증 메서드 호출
+            if (ppurioToken == null || !isValidPpurioToken(ppurioToken)) {
+                throw new RuntimeException("Ppurio Token 인증 실패");
+            }
+        }
+
         // 토큰이 없거나 형식이 올바르지 않은 경우 오류 처리
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new RuntimeException("Access Token Null or Invalid Format");
@@ -56,7 +66,7 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         // RequestContext : 요청에 대한 정보를 저장하고 관리하는 컨테이너 역할
         if(userId != null) {
             var requestContext = Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
-            // SCOPE_REQUEST에 의해 해당 요청이 끝날 때까지  userId 속성 유지
+            // SCOPE_REQUEST에 의해 해당 요청이 끝날 때까지 userId 속성 유지
             requestContext.setAttribute("userId", userId, RequestAttributes.SCOPE_REQUEST);
             return true;
         }
@@ -64,5 +74,12 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         // Token 검증 실패
         throw new RuntimeException("인증 실패");
     }
-}
 
+    // 뿌리오 토큰 검증 메서드 예시 - 클래스 외부에 별도로 추가
+    private boolean isValidPpurioToken(String ppurioToken) {
+        // 실제 검증 로직을 구현해야 합니다.
+        // 예를 들어, TokenBusiness 클래스의 메서드를 호출하여 검증할 수 있습니다.
+        // 현재는 예시로 단순 비교를 수행합니다.
+        return ppurioToken.equals("expected_value"); // 예시 값 비교
+    }
+}
