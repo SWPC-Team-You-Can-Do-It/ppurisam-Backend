@@ -56,6 +56,10 @@ dependencies {
 
 	//FFmpeg
 	implementation group: 'com.github.kokorin.jaffree', name: 'jaffree', version: '2024.08.29'
+
+	// dotenv-java 추가
+	implementation 'io.github.cdimascio:dotenv-java:2.2.0'
+
 }
 
 tasks.named('test') {

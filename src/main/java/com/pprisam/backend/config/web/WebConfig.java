@@ -38,6 +38,12 @@ public class WebConfig implements WebMvcConfigurer {
             "/v3/api-docs/**"
     );
 
+    //Ppurio 관련 주소
+    private final List<String> PPURIO = List.of(
+            "/api/ppurio/send",
+            "/api/ppurio/token" // 추가된 엔드포인트
+    );
+
     // 인터셉터 등록
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -46,6 +52,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .excludePathPatterns(OPEN_API)
                 .excludePathPatterns(DEFAULT_EXCLUDE)
                 .excludePathPatterns(SWAGGER)
+                .excludePathPatterns(PPURIO);
         ;
     }
 
@@ -59,6 +66,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/images/**") // /images 요청에 따라
                 .addResourceLocations("classpath:/static/images/");
     }
+
 
     // CORS 설정 추가
     @Override
