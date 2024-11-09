@@ -14,6 +14,8 @@ public class ContactResponse {
 
     private Long userId;
 
+    private Long groupId;
+
     private String name;
 
     private String phoneNumber;
