@@ -35,20 +35,21 @@ public class ContactService {
                 .id(userIdResponse.getId())
                 .build();
 
+        // GroupEntity 조회
+        GroupEntity groupEntity = groupRepository.findById(contactRequest.getGroupId())
+                .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + contactRequest.getGroupId()));
+
         // ContactEntity 생성
         ContactEntity contactEntity = ContactEntity.builder()
                 .name(contactRequest.getName())
                 .phoneNumber(contactRequest.getPhoneNumber())
                 .memo(contactRequest.getMemo())
                 .userEntity(userEntity)
+                .groupEntity(groupEntity)
                 .build();
 
         // ContactEntity에 저장
         ContactEntity savedContact = contactRepository.save(contactEntity);
-
-        // GroupEntity 조회
-        GroupEntity groupEntity = groupRepository.findById(contactRequest.getGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + contactRequest.getGroupId()));
 
         // GroupMember에 데이터 저장
         GroupMemberEntity groupMemberEntity = GroupMemberEntity.builder()
@@ -82,21 +83,24 @@ public class ContactService {
         existingContact.setPhoneNumber(contactRequest.getPhoneNumber());
         existingContact.setMemo(contactRequest.getMemo());
         existingContact.setUserEntity(userEntity);
-        contactRepository.save(existingContact);
 
-        // 기존 GroupMemberEntity 조회 (List에서 첫 번째 요소를 가져옴)
-        GroupMemberEntity existingGroupMember = groupMemberRepository.findByContactEntityId(existingContact.getId())
-                .stream()
-                .findFirst()
-                .orElseThrow(() -> new EntityNotFoundException("그룹 멤버를 찾을 수 없습니다. 연락처 ID: " + contactId));
-
-        // 새로운 GroupEntity 조회
+        // 새로운 GroupEntity 조회 및 설정
         GroupEntity newGroupEntity = groupRepository.findById(contactRequest.getGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("그룹을 찾을 수 없습니다. ID: " + contactRequest.getGroupId()));
 
+        // 그룹 변경이 있는 경우에만 업데이트
+        if (!existingContact.getGroupEntity().equals(newGroupEntity)) {
+            existingContact.setGroupEntity(newGroupEntity);
+        }
+
+        contactRepository.save(existingContact);
+
         // GroupMemberEntity 업데이트
-        existingGroupMember.setGroupEntity(newGroupEntity);
-        groupMemberRepository.save(existingGroupMember);
+        groupMemberRepository.findByContactEntityId(existingContact.getId())
+                .forEach(groupMember -> {
+                    groupMember.setGroupEntity(newGroupEntity);
+                    groupMemberRepository.save(groupMember);
+                });
 
         // Elasticsearch 도큐먼트 업데이트
         List<GroupMemberEntity> groupMembers = groupMemberRepository.findByContactEntityId(existingContact.getId());

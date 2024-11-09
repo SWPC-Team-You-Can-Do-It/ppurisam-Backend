@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 
 
 @Data
@@ -21,7 +22,7 @@ public class ContactRequest {
     @NotBlank
     private String memo;
 
-    @NotBlank
+    @NotNull
     private Long groupId;
 
 }
