@@ -130,8 +130,16 @@ public class ContactService {
     }
 
     private ContactResponse toResponse(ContactEntity contactEntity) {
+        // GroupMemberEntity를 통해 groupId를 조회
+        Long groupId = groupMemberRepository.findByContactEntityId(contactEntity.getId())
+                .stream()
+                .findFirst() // 그룹이 하나라는 가정으로 첫 번째 그룹을 가져옴
+                .map(groupMember -> groupMember.getGroupEntity().getId())
+                .orElse(null);
+
         return ContactResponse.builder()
                 .id(contactEntity.getId())
+                .groupId(groupId)
                 .userId(contactEntity.getUserEntity().getId())  // userEntity의 id만 반환
                 .name(contactEntity.getName())
                 .phoneNumber(contactEntity.getPhoneNumber())
