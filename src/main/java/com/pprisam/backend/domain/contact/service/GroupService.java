@@ -19,7 +19,6 @@ public class GroupService {
         GroupEntity newGroup = GroupEntity.builder()
                 .name(groupRequest.getName())
                 .build();
-
         return groupRepository.save(newGroup); // 새 그룹을 저장
     }
 
