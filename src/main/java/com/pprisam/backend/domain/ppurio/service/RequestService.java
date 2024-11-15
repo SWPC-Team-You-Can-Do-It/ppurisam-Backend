@@ -74,7 +74,7 @@ public class RequestService {
      * @return Map<String, Object>
      * @throws IOException
      */
-    private Map<String, Object> createSendParams(SendRequest sendRequest) throws IOException {
+    public Map<String, Object> createSendParams(SendRequest sendRequest) throws IOException {
         HashMap<String, Object> params = new HashMap<>();
         params.put("account", sendRequest.getAccount());
         params.put("messageType", sendRequest.getMessageType());
