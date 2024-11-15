@@ -25,6 +25,7 @@ public class PpurioController {
     // MMS/SMS 발송 엔드포인트
     @PostMapping("/send")
     public ResponseEntity<?> send(@RequestBody SendRequest sendRequest) {
+        System.out.println("Received SendRequest: " + sendRequest);
         ppurioService.send(sendRequest);
         return ResponseEntity.ok("MMS/SMS 발송이 성공적으로 완료되었습니다.");
     }

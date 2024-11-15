@@ -60,6 +60,10 @@ dependencies {
 	// dotenv-java 추가
 	implementation 'io.github.cdimascio:dotenv-java:2.2.0'
 
+	//io
+	implementation 'commons-io:commons-io:2.8.0'
+
+
 }
 
 tasks.named('test') {

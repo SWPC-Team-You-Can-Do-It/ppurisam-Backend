@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 
 @Service
@@ -18,7 +18,7 @@ public class RequestService {
     private String URI;
 
     @Value("${ppurio.image.path}")
-    private String IMAGE_FOLDER_PATH; // 클래스패스 기반 이미지 폴더 경로
+    private String IMAGE_FOLDER_PATH;
 
     private final RestTemplate restTemplate;
     private final PpurioAuthService ppurioAuthService;
@@ -110,6 +110,7 @@ public class RequestService {
         // messageType이 MMS 또는 LMS인 경우에만 files 필드 추가
         if ("MMS".equalsIgnoreCase(sendRequest.getMessageType()) || "LMS".equalsIgnoreCase(sendRequest.getMessageType())) {
             if (sendRequest.getFiles() != null && !sendRequest.getFiles().isEmpty()) {
+                // 이미지 파일의 전체 경로 생성
                 String imagePath = IMAGE_FOLDER_PATH + sendRequest.getFiles().get(0).getName(); // 첫 번째 파일만 처리
                 params.put("files", List.of(
                         createFileParams(imagePath)
@@ -125,19 +126,18 @@ public class RequestService {
     /**
      * MMS/SMS 발송 요청 시 파일 파라미터 생성 (MMS/LMS에만 사용)
      *
-     * @param resourcePath 클래스패스 기반의 리소스 경로 (예: "static/images/cat.jpg")
+     * @param imagePath 이미지 파일의 전체 경로
      * @return Map<String, Object>
      * @throws IOException
      */
-    private Map<String, Object> createFileParams(String resourcePath) throws IOException {
-        // 클래스패스 내의 리소스를 로드
-        Resource resource = new ClassPathResource(resourcePath);
-        if (!resource.exists()) {
-            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + resourcePath);
+    private Map<String, Object> createFileParams(String imagePath) throws IOException {
+        File imageFile = new File(imagePath);
+        if (!imageFile.exists()) {
+            throw new FileNotFoundException("파일을 찾을 수 없습니다: " + imagePath);
         }
 
-        String fileName = resource.getFilename();
-        long fileSize = resource.contentLength();
+        String fileName = imageFile.getName();
+        long fileSize = imageFile.length();
 
         // 파일 이름 검증
         if (fileName == null || (!fileName.toLowerCase().endsWith(".jpg") && !fileName.toLowerCase().endsWith(".jpeg"))) {
@@ -149,11 +149,8 @@ public class RequestService {
             throw new IllegalArgumentException("파일 크기가 300KB를 초과합니다.");
         }
 
-        byte[] fileBytes;
-        // InputStream을 사용하여 파일을 읽음
-        try (InputStream inputStream = resource.getInputStream()) {
-            fileBytes = inputStream.readAllBytes();
-        }
+        // 파일 읽기
+        byte[] fileBytes = Files.readAllBytes(imageFile.toPath());
 
         // Base64 인코딩
         String encodedFileData = Base64.getEncoder().encodeToString(fileBytes);
@@ -165,4 +162,5 @@ public class RequestService {
         fileParams.put("data", encodedFileData);
         return fileParams;
     }
+
 }
