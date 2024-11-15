@@ -9,4 +9,7 @@ import lombok.*;
 public class ImageAIRequest {
     @NonNull
     private String prompt;
+
+    @NonNull
+    private String theme;
 }

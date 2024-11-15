@@ -1,5 +1,6 @@
 package com.pprisam.backend.domain.ai.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.pprisam.backend.domain.ai.model.ImageAIRequest;
 import com.pprisam.backend.domain.ai.service.ImageAIService;
 import jakarta.validation.Valid;
@@ -18,7 +19,7 @@ public class ImageAIController {
 
     // 이미지 생성
     @PostMapping()
-    public String generateImage (@Valid @RequestBody ImageAIRequest imageRequest) {
-        return imageAIService.generate(imageRequest.getPrompt());
+    public String generateImage (@Valid @RequestBody ImageAIRequest imageRequest) throws JsonProcessingException {
+        return imageAIService.generate(imageRequest.getPrompt(), imageRequest.getTheme());
     }
 }

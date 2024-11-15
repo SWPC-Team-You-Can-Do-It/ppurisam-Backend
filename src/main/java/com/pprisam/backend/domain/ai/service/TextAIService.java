@@ -4,7 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pprisam.backend.domain.ai.model.TextAIResponse;
+import com.theokanning.openai.completion.CompletionRequest;
+import com.theokanning.openai.completion.CompletionResult;
+import com.theokanning.openai.service.OpenAiService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -123,5 +129,40 @@ public class TextAIService {
         return TextAIResponse.builder()
                 .generatedText(modifiedText)
                 .build();
+    }
+
+
+    public String translateKrPrompt(String krPrompt) throws JsonProcessingException {
+        // 헤더 설정
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + openAiApiKey);
+        headers.set("Content-Type", "application/json");
+
+        // 메시지 리스트 생성
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(Map.of("role", "system", "content", "You are a translator. Translate the following Korean text to English."));
+        messages.add(Map.of("role", "user", "content", krPrompt));
+
+        // 바디 설정
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-4o-mini");
+        requestBody.put("messages", messages);
+        requestBody.put("max_tokens", 500);
+        requestBody.put("temperature", 0.0);
+
+        // 요청 엔티티 생성
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // API 호출
+        ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+
+        // JSON 응답 파싱
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response.getBody());
+
+        // 필요한 부분 추출
+        String translatedPrompt = root.path("choices").get(0).path("message").path("content").asText().trim();
+
+        return translatedPrompt;
     }
 }
