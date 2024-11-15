@@ -1,12 +1,11 @@
 package com.pprisam.backend.domain.message.repository;
 
-import com.pprisam.backend.domain.ppurio.model.MessageFile;
 import com.pprisam.backend.domain.receiver.repository.ReceiverEntity;
 import com.pprisam.backend.domain.user.repository.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -37,10 +36,11 @@ public class MessageEntity {
     // 성공, 실패
     @Column(nullable = false)
     private Boolean status;
+
     // 발신자 번호
     @Column(nullable = false)
     private String fromPhoneNumber;
 
     @OneToMany(mappedBy = "message")
-    private List<ReceiverEntity> receivers;
+    private List<ReceiverEntity> receivers = new ArrayList<>();
 }

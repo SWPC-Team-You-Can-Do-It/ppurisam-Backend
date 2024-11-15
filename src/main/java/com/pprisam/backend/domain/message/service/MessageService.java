@@ -1,20 +1,19 @@
 package com.pprisam.backend.domain.message.service;
 
 import com.pprisam.backend.domain.message.converter.MessageConverter;
+import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
-
 import com.pprisam.backend.domain.message.repository.MessageEntity;
 import com.pprisam.backend.domain.message.repository.MessageRepository;
-import com.pprisam.backend.domain.ppurio.model.SendRequest;
 import com.pprisam.backend.domain.receiver.repository.ReceiverEntity;
 import com.pprisam.backend.domain.receiver.repository.ReceiverRepository;
 import com.pprisam.backend.domain.user.model.User;
 import com.pprisam.backend.domain.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cglib.core.Local;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -58,7 +57,7 @@ public class MessageService {
                 ;
 
         // MessageEntity 저장
-        var newMessageEntity=messageRepository.save(messageEntity);
+        var savedMessageEntity=messageRepository.save(messageEntity);
 
         // target 리스트 가져오기
         List<Map<String, Object>> targets=(List<Map<String, Object>>) params.get("targets");
@@ -68,7 +67,7 @@ public class MessageService {
                 var entity=ReceiverEntity.builder()
                         .name(target.get("name").toString())
                         .phoneNumber(target.get("to").toString())
-                        .message(newMessageEntity) // 다대일 연관관계
+                        .message(savedMessageEntity) // 다대일 연관관계
                         .build();
                 var newEntity=receiverRepository.save(entity);
 
@@ -77,10 +76,16 @@ public class MessageService {
             }
         ).toList();
 
+        // MessageEntity에 receiver 리스트 추가
+        messageEntity.setReceivers(receiverEntityList);  // 양방향 관계 설정
+
+        // MessageEntity 저장
+        var finalMessageEntity = messageRepository.save(messageEntity);
+
         // TODO 이미지 처리 추가
 
 
-        var messageResponse=messageConverter.toMessageResponse(messageEntity, receiverEntityList);
+        var messageResponse=messageConverter.toMessageResponse(finalMessageEntity);
 
         return messageResponse;
     }
@@ -98,5 +103,25 @@ public class MessageService {
             log.info("시간 변환 실패 현재 시간으로 저장");
             return sendAt;
         }
+    }
+
+    // 문자 목록 조회
+    public MessagePageResponse findAll(User user, Pageable pageable) {
+        // 페이징 고려한 사용자의 문자Entity 리스트
+        Page<MessageEntity> messageList = messageRepository.findAllMessagesByUserId(user.getId(), pageable);
+
+        // 문자Entity리스트에서 문자 ID만 추출
+        List<Long> messageIds = messageList.getContent().stream()
+            .map((MessageEntity::getId))
+            .collect(Collectors.toList())
+            ;
+
+        // 문자ID로 다시 문자 조회 (N+1문제로 인해 수신자 리스트 Fetch Join)
+        List<MessageEntity> messagesWithReceivers = messageRepository.findMessagesWithReceiversByIds(messageIds);
+
+        // 결과 반환
+        return messageConverter.toMessageResponsePage(
+                messagesWithReceivers, pageable, messageList.getTotalElements()
+        );
     }
 }

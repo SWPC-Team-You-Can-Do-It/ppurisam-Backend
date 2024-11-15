@@ -1,6 +1,7 @@
 package com.pprisam.backend.domain.message.controller;
 
 import com.pprisam.backend.config.annotation.UserSession;
+import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
 import com.pprisam.backend.domain.message.service.MessageService;
 import com.pprisam.backend.domain.ppurio.model.SendRequest;
@@ -8,11 +9,9 @@ import com.pprisam.backend.domain.ppurio.service.RequestService;
 import com.pprisam.backend.domain.user.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 
 @RestController
@@ -32,5 +31,13 @@ public class MessageController {
         log.info("MessageController parmas 값: {}", params);
 
         return messageService.saveMessage(params, user, true);
+    }
+
+    // 문자 조회
+    @GetMapping("")
+    public MessagePageResponse getMessages(
+            @UserSession User user, @RequestParam(defaultValue = "0") int page) {
+        Pageable pageable = PageRequest.of(page, 6);
+        return messageService.findAll(user, pageable);
     }
 }
