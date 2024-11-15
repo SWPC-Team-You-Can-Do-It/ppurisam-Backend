@@ -3,6 +3,8 @@ package com.pprisam.backend.config.web;
 import com.pprisam.backend.interceptor.AuthorizationInterceptor;
 import com.pprisam.backend.resolver.UserSessionResolver;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -18,6 +20,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthorizationInterceptor authorizationInterceptor;
     private final UserSessionResolver userSessionResolver;
+
+    @Value("${image.storage.path}")
+    private String imageStoragePath;
 
     //회원가입, 로그인 등 비로그인한 상태
     private List<String> OPEN_API = List.of(
@@ -63,10 +68,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/images/**") // /images 요청에 따라
-                .addResourceLocations("classpath:/static/images/");
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:" + imageStoragePath + "/");
     }
-
 
     // CORS 설정 추가
     @Override

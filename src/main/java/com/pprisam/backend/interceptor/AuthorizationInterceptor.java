@@ -77,9 +77,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
     // 뿌리오 토큰 검증 메서드 예시 - 클래스 외부에 별도로 추가
     private boolean isValidPpurioToken(String ppurioToken) {
-        // 실제 검증 로직을 구현해야 합니다.
-        // 예를 들어, TokenBusiness 클래스의 메서드를 호출하여 검증할 수 있습니다.
-        // 현재는 예시로 단순 비교를 수행합니다.
         return ppurioToken.equals("expected_value"); // 예시 값 비교
     }
 }
