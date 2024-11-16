@@ -56,36 +56,32 @@ public class MessageService {
                 .build()
                 ;
 
-        // MessageEntity 저장
-        var savedMessageEntity=messageRepository.save(messageEntity);
-
         // target 리스트 가져오기
         List<Map<String, Object>> targets=(List<Map<String, Object>>) params.get("targets");
 
         // target 리스트 receiver로 변환 및 저장
         List<ReceiverEntity> receiverEntityList= targets.stream().map(target->{
-                var entity=ReceiverEntity.builder()
+                var receiver=ReceiverEntity.builder()
                         .name(target.get("name").toString())
                         .phoneNumber(target.get("to").toString())
-                        .message(savedMessageEntity) // 다대일 연관관계
                         .build();
-                var newEntity=receiverRepository.save(entity);
 
-                log.info("저장된 ReceiverEntity: {}", newEntity);
-                return newEntity;
+                messageEntity.addReceiver(receiver); // 양방향 연관관계 설정
+
+                return receiver;
             }
         ).toList();
 
-        // MessageEntity에 receiver 리스트 추가
-        messageEntity.setReceivers(receiverEntityList);  // 양방향 관계 설정
+        MessageEntity savedMessage = messageRepository.save(messageEntity); //문자 저장
 
-        // MessageEntity 저장
-        var finalMessageEntity = messageRepository.save(messageEntity);
+        receiverRepository.saveAll(receiverEntityList); //수신자 저장
+
+
 
         // TODO 이미지 처리 추가
 
 
-        var messageResponse=messageConverter.toMessageResponse(finalMessageEntity);
+        var messageResponse=messageConverter.toMessageResponse(savedMessage);
 
         return messageResponse;
     }

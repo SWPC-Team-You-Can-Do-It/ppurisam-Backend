@@ -43,4 +43,15 @@ public class MessageEntity {
 
     @OneToMany(mappedBy = "message")
     private List<ReceiverEntity> receivers = new ArrayList<>();
+
+    // 연관관계 편의 메소드
+    public void addReceiver(ReceiverEntity receiver) {
+        if (receivers == null) {
+            receivers = new ArrayList<>();  //null 체크 안넣었더니 오류 발생해서 필요한 듯
+        }
+        if (!receivers.contains(receiver)) {  // 중복 방지
+            receivers.add(receiver);
+            receiver.setMessage(this); // 반대쪽 연관관계 설정
+        }
+    }
 }
