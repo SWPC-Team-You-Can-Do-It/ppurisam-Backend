@@ -22,4 +22,9 @@ public class ThemeEntity {
 
     @Column(nullable = false)
     private String description;
+
+    public ThemeEntity(String theme, String description) {
+        this.theme = theme;
+        this.description = description;
+    }
 }
