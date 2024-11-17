@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class MessageFile {
     private String name;
-    private long size;
+    private Integer size;
     private String data;
+    private String url;
 }

@@ -1,10 +1,14 @@
 package com.pprisam.backend.domain.message.service;
 
+import com.pprisam.backend.domain.image.repository.ImageEntity;
+import com.pprisam.backend.domain.image.repository.ImageRepository;
 import com.pprisam.backend.domain.message.converter.MessageConverter;
 import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
 import com.pprisam.backend.domain.message.repository.MessageEntity;
 import com.pprisam.backend.domain.message.repository.MessageRepository;
+import com.pprisam.backend.domain.ppurio.model.SendRequest;
+import com.pprisam.backend.domain.ppurio.model.Target;
 import com.pprisam.backend.domain.receiver.repository.ReceiverEntity;
 import com.pprisam.backend.domain.receiver.repository.ReceiverRepository;
 import com.pprisam.backend.domain.user.model.User;
@@ -30,17 +34,17 @@ public class MessageService {
     private final ReceiverRepository receiverRepository;
     private final UserService userService;
     private final MessageConverter messageConverter;
+    private final ImageRepository imageRepository;
 
-    public MessageResponse saveMessage(Map<String, Object> params, User user, Boolean sendStatus) {
+    public MessageResponse saveMessage(SendRequest sendRequest, User user, Boolean sendStatus) {
 
-        String content = params.get("content") != null ? params.get("content").toString() : "";
-        String sendTimeStr = params.get("sendTime") != null ? params.get("sendTime").toString() : LocalDateTime.now().toString();
-        String title = params.get("title") != null ? params.get("title").toString() : "제목없음";
-        String from = params.get("from") != null ? params.get("from").toString() : "";
+        String content = sendRequest.getContent();
+        String sendTimeStr = sendRequest.getSendTime() != null ? sendRequest.getSendTime() : LocalDateTime.now().toString();
+        String title =  sendRequest.getTitle() !=null ? sendRequest.getTitle() : "제목없음";
+        String from = sendRequest.getFrom() != null ? sendRequest.getFrom() : "";
 
         // sendTime 문자열을 LocalDateTime으로 변환
         LocalDateTime sendAt=toDateTime(sendTimeStr);
-
 
         // 유저 entity 가져오기
         var userEntity=userService.getUserWithThrow(user.getId());
@@ -57,13 +61,13 @@ public class MessageService {
                 ;
 
         // target 리스트 가져오기
-        List<Map<String, Object>> targets=(List<Map<String, Object>>) params.get("targets");
+        List<Target> targets=sendRequest.getTargets();
 
         // target 리스트 receiver로 변환 및 저장
         List<ReceiverEntity> receiverEntityList= targets.stream().map(target->{
                 var receiver=ReceiverEntity.builder()
-                        .name(target.get("name").toString())
-                        .phoneNumber(target.get("to").toString())
+                        .name(target.getName())
+                        .phoneNumber(target.getTo())
                         .build();
 
                 messageEntity.addReceiver(receiver); // 양방향 연관관계 설정
@@ -72,14 +76,21 @@ public class MessageService {
             }
         ).toList();
 
+        // 이미지 파일 처리: 첫 번째 파일만
+        var file=sendRequest.getFiles().getFirst();
+
+        var imageEntity=ImageEntity.builder()
+                .url(file.getUrl())
+                .size(file.getSize())
+                .name(file.getName())
+                .build()
+                ;
+        messageEntity.addImage(imageEntity);
+
+
         MessageEntity savedMessage = messageRepository.save(messageEntity); //문자 저장
-
         receiverRepository.saveAll(receiverEntityList); //수신자 저장
-
-
-
-        // TODO 이미지 처리 추가
-
+        imageRepository.save(imageEntity); // 이미지 저장
 
         var messageResponse=messageConverter.toMessageResponse(savedMessage);
 
@@ -88,12 +99,12 @@ public class MessageService {
 
     public LocalDateTime toDateTime(String sendTimeStr) {
         LocalDateTime sendAt = null;
+
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
             sendAt = LocalDateTime.parse(sendTimeStr, formatter);
             log.info("시간 변환 성공");
             return sendAt;
-
         } catch (DateTimeParseException e) {
             sendAt = LocalDateTime.now(); // 변환 실패 시 현재 시간으로 설정
             log.info("시간 변환 실패 현재 시간으로 저장");

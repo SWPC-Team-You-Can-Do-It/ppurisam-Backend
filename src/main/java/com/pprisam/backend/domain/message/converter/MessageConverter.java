@@ -1,5 +1,6 @@
 package com.pprisam.backend.domain.message.converter;
 
+import com.pprisam.backend.domain.image.converter.ImageConverter;
 import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
 import com.pprisam.backend.domain.message.repository.MessageEntity;
@@ -15,6 +16,7 @@ import java.util.stream.Collectors;
 public class MessageConverter {
 
     private final ReceiverConverter receiverConverter;
+    private final ImageConverter imageConverter;
 
     public MessageResponse toMessageResponse(MessageEntity messageEntity) {
 
@@ -23,6 +25,11 @@ public class MessageConverter {
                             return receiverConverter.toResponse(entity);
                         }).toList();
 
+        var images=messageEntity.getImages().stream()
+                .map(entity->{
+                    return imageConverter.toResponse(entity);
+                }).toList();
+
         return MessageResponse.builder()
                 .title(messageEntity.getTitle())
                 .content(messageEntity.getContent())
@@ -30,6 +37,7 @@ public class MessageConverter {
                 .status(messageEntity.getStatus())
                 .fromPhoneNumber(messageEntity.getFromPhoneNumber())
                 .receivers(receivers)
+                .images(images)
                 .build()
                 ;
     }

@@ -14,6 +14,8 @@ public class SendRequest {
     private String content;
     private String from;
 
+    private String title; // 추후 제목 추가를 위함
+
     @JsonProperty("duplicateFlag")
     private String duplicateFlag;
 
