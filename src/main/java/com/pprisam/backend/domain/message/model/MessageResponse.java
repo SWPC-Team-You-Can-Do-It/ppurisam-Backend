@@ -1,5 +1,6 @@
 package com.pprisam.backend.domain.message.model;
 
+import com.pprisam.backend.domain.image.model.ImageResponse;
 import com.pprisam.backend.domain.ppurio.model.MessageFile;
 import com.pprisam.backend.domain.ppurio.model.Target;
 import com.pprisam.backend.domain.receiver.model.ReceiverResponse;
@@ -29,4 +30,5 @@ public class MessageResponse {
 
     private List<ReceiverResponse> receivers;
 
+    private List<ImageResponse> images;
 }

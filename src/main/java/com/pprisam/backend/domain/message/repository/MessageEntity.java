@@ -1,5 +1,6 @@
 package com.pprisam.backend.domain.message.repository;
 
+import com.pprisam.backend.domain.image.repository.ImageEntity;
 import com.pprisam.backend.domain.receiver.repository.ReceiverEntity;
 import com.pprisam.backend.domain.user.repository.UserEntity;
 import jakarta.persistence.*;
@@ -44,6 +45,9 @@ public class MessageEntity {
     @OneToMany(mappedBy = "message")
     private List<ReceiverEntity> receivers = new ArrayList<>();
 
+    @OneToMany(mappedBy = "message")
+    private List<ImageEntity> images = new ArrayList<>();
+
     // 연관관계 편의 메소드
     public void addReceiver(ReceiverEntity receiver) {
         if (receivers == null) {
@@ -52,6 +56,17 @@ public class MessageEntity {
         if (!receivers.contains(receiver)) {  // 중복 방지
             receivers.add(receiver);
             receiver.setMessage(this); // 반대쪽 연관관계 설정
+        }
+    }
+
+    // 연관관계 편의 메소드
+    public void addImage(ImageEntity image) {
+        if (images == null) {
+            images = new ArrayList<>();  //null 체크 안넣었더니 오류 발생해서 필요한 듯
+        }
+        if (!images.contains(image)) {  // 중복 방지
+            images.add(image);
+            image.setMessage(this); // 반대쪽 연관관계 설정
         }
     }
 }

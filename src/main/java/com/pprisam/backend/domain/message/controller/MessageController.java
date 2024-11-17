@@ -27,10 +27,8 @@ public class MessageController {
     // 테스트 용 실제로는 Ppurio 로직에서 관리
     @PostMapping("")
     public MessageResponse messageSend(@UserSession User user, @RequestBody SendRequest sendRequest) throws IOException {
-        var params=requestService.createSendParams(sendRequest);
-        log.info("MessageController parmas 값: {}", params);
 
-        return messageService.saveMessage(params, user, true);
+        return messageService.saveMessage(sendRequest, user, true);
     }
 
     // 문자 조회
