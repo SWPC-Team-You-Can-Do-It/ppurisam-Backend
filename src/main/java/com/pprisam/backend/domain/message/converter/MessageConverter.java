@@ -8,7 +8,10 @@ import com.pprisam.backend.domain.receiver.converter.ReceiverConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,10 +28,12 @@ public class MessageConverter {
                             return receiverConverter.toResponse(entity);
                         }).toList();
 
-        var images=messageEntity.getImages().stream()
-                .map(entity->{
-                    return imageConverter.toResponse(entity);
-                }).toList();
+        // 이미지 리스트 처리
+        var images = Optional.ofNullable(messageEntity.getImages())
+                .orElse(Collections.emptyList()) // null인 경우 빈 리스트로 처리
+                .stream()
+                .map(entity -> imageConverter.toResponse(entity))
+                .toList();
 
         return MessageResponse.builder()
                 .title(messageEntity.getTitle())

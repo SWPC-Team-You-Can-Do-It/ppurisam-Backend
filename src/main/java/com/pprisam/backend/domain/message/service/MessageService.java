@@ -76,21 +76,26 @@ public class MessageService {
             }
         ).toList();
 
-        // 이미지 파일 처리: 첫 번째 파일만
-        var file=sendRequest.getFiles().getFirst();
 
-        var imageEntity=ImageEntity.builder()
-                .url(file.getUrl())
-                .size(file.getSize())
-                .name(file.getName())
-                .build()
-                ;
-        messageEntity.addImage(imageEntity);
+        // 이미지 파일 처리: 파일이 있는 경우만 처리
+        if (sendRequest.getFiles() != null && !sendRequest.getFiles().isEmpty()) {
+            var file = sendRequest.getFiles().get(0); // 첫 번째 파일 가져오기
+
+            var imageEntity = ImageEntity.builder()
+                    .url(file.getUrl())
+                    .size(file.getSize())
+                    .name(file.getName())
+                    .build();
+            messageEntity.addImage(imageEntity); // 양방향 연관관계 설정
+        }
 
 
         MessageEntity savedMessage = messageRepository.save(messageEntity); //문자 저장
         receiverRepository.saveAll(receiverEntityList); //수신자 저장
-        imageRepository.save(imageEntity); // 이미지 저장
+
+        if (messageEntity.getImages() != null && !messageEntity.getImages().isEmpty()) {
+            imageRepository.saveAll(messageEntity.getImages()); // 이미지 저장
+        }
 
         var messageResponse=messageConverter.toMessageResponse(savedMessage);
 
