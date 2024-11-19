@@ -1,8 +1,6 @@
 package com.pprisam.backend.config.web;
 
-import com.pprisam.backend.interceptor.AuthorizationInterceptor;
-import com.pprisam.backend.resolver.UserSessionResolver;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -12,7 +10,10 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.util.List;
+import com.pprisam.backend.interceptor.AuthorizationInterceptor;
+import com.pprisam.backend.resolver.UserSessionResolver;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
@@ -20,6 +21,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final AuthorizationInterceptor authorizationInterceptor;
     private final UserSessionResolver userSessionResolver;
+
+    @Value("${EC2_URL}")
+    private String ec2Url;
 
     @Value("${image.storage.path}")
     private String imageStoragePath;
@@ -76,7 +80,10 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins("http://localhost:3000") // 프론트엔드 주소
+                .allowedOriginPatterns(
+                        "*://" + ec2Url + ":3000",
+                        "*://localhost:3000"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
