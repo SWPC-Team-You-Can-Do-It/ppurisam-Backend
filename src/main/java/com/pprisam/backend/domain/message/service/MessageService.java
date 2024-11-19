@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -131,9 +133,37 @@ public class MessageService {
         // 문자ID로 다시 문자 조회 (N+1문제로 인해 수신자 리스트 Fetch Join)
         List<MessageEntity> messagesWithReceivers = messageRepository.findMessagesWithReceiversByIds(messageIds);
 
+        // 문자ID로 다시 문자 조회 (N+1문제로 인해 이미지 Fetch Join)
+        List<MessageEntity> messagesWithImages = messageRepository.findMessagesWithImagesByIds(messageIds);
+
+        // 결과 합치기
+        List<MessageEntity> combineMessages = combineMessage(messagesWithReceivers, messagesWithImages);
+
         // 결과 반환
         return messageConverter.toMessageResponsePage(
-                messagesWithReceivers, pageable, messageList.getTotalElements()
+                combineMessages, pageable, messageList.getTotalElements()
         );
+    }
+
+    // 수신자 포함한 문자 리스트와 이미지 포함한 문자 리스트 병합
+    private List<MessageEntity> combineMessage(List<MessageEntity> messagesWithReceivers, List<MessageEntity> messagesWithImages) {
+        // 병합하기 위한 임시
+        Map<Long, MessageEntity> messageMap = new LinkedHashMap<>();
+
+        // 수신자 정보를 가진 메시지들을 맵에 추가
+        for (MessageEntity message : messagesWithReceivers) {
+            messageMap.put(message.getId(), message);
+        }
+
+        // 수신자 메시지에 이미지 정보 추가
+        for (MessageEntity message : messagesWithImages) {
+            if(message.getImages()!=null && !message.getImages().isEmpty()) {
+                MessageEntity existingMessage = messageMap.get(message.getId());
+                existingMessage.setImages(message.getImages());
+            }
+        }
+
+        // 맵의 값들을 리스트로 변환하여 반환
+        return new ArrayList<>(messageMap.values());
     }
 }
