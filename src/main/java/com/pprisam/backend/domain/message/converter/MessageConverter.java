@@ -49,10 +49,10 @@ public class MessageConverter {
 
     // 문자 내용과 페이징 관련 정보들
     public MessagePageResponse toMessageResponsePage(
-            List<MessageEntity> messagesWithReceivers, Pageable pageable, long totalElements) {
+            List<MessageEntity> messagesWithReceiversAndImages, Pageable pageable, long totalElements) {
 
         // List<MessageEntity>를 List<MessageResponse>로 변환
-        List<MessageResponse> messageResponses = messagesWithReceivers.stream()
+        List<MessageResponse> messageResponses = messagesWithReceiversAndImages.stream()
                 .map(msg -> toMessageResponse(msg))  // 변환 메서드 사용
                 .collect(Collectors.toList());
 
