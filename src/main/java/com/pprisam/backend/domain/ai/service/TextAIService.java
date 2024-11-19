@@ -4,6 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pprisam.backend.domain.ai.model.TextAIResponse;
+import com.pprisam.backend.domain.ai.repository.TextThemeEntity;
+import com.pprisam.backend.domain.ai.repository.TextThemeRepository;
+import com.pprisam.backend.domain.ai.repository.ThemeEntity;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -19,6 +23,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class TextAIService {
 
     @Value("${openai.api.key}")
@@ -26,7 +31,9 @@ public class TextAIService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String apiUrl = "https://api.openai.com/v1/chat/completions";
+    private final TextThemeRepository textThemeRepository;
 
+    // 기본 문자 생성
     public TextAIResponse generateText(String inputText) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + openAiApiKey);
@@ -76,6 +83,68 @@ public class TextAIService {
                 .build()
                 ;
     }
+
+    // 카테고리 기반 문자생성
+    public TextAIResponse generateTextWithTheme(String inputText, String theme) throws JsonProcessingException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + openAiApiKey);
+        headers.set("Content-Type", "application/json");
+
+        TextThemeEntity textThemeEntity = textThemeRepository.findByTheme(theme)
+                .orElseThrow(() -> new NullPointerException("While generating Text With Theme: Theme is Not Found"));
+
+
+        // Prompt 생성
+
+        String prompt = String.format("""
+            You are a high-quality text message generation service. 
+            Based on the category and text provided below, please create a well-crafted message with appropriate length.
+            Ensure that the tone, style, and content of the message strongly align with the given category to make it highly relevant and engaging. 
+            The message should effectively convey the intended theme while being clear and concise, and the flow of the sentences should feel natural.
+            Include additional details if necessary to make the message more informative and appealing.
+            Category: "%s"
+            Text: "%s"
+            The message must not include any emojis or emoticons under any circumstances.
+            Please ensure the message is at least 150 characters long and does not exceed 1000 characters in length.
+            Generate the message based on the provided category and text. 
+            Please respond in Korean.
+            """, textThemeEntity.getTheme(), inputText
+        );
+
+
+        // 모델 및 메시지 설정
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-4o-mini");
+
+        // 메시지 배열 추가
+        requestBody.put("messages", new Object[] {
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        });
+        requestBody.put("max_tokens", 500);
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // API 호출
+        ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.POST, requestEntity, String.class);
+
+        // JSON 데이터 가져오기
+        var responseBody = response.getBody();
+        log.info("ResponseBody: {}", responseBody);
+
+        // JSON 파싱
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(responseBody);
+
+        var generatedText = root.path("choices").get(0).path("message").path("content").asText();
+
+        return TextAIResponse.builder()
+                .generatedText(generatedText)
+                .build();
+    }
+
 
     public TextAIResponse editText(String textPre, String textRefactor) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
@@ -160,4 +229,12 @@ public class TextAIService {
 
         return translatedPrompt;
     }
+
+    // Custom Exception
+    public class InvalidThemeException extends RuntimeException {
+        public InvalidThemeException(String message) {
+            super(message);
+        }
+    }
+
 }

@@ -14,4 +14,6 @@ public class TextAIRequest {
 
     @NotBlank
     private String text;
+
+    private String theme;
 }
