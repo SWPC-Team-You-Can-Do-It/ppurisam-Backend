@@ -63,9 +63,7 @@ dependencies {
 	//io
 	implementation 'commons-io:commons-io:2.8.0'
 
-	// 모니터링(프로메테우스)
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
 }
 
 tasks.named('test') {
