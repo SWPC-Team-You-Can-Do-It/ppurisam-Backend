@@ -85,6 +85,32 @@ services:
       timeout: 10s
       retries: 3
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports :
+      - "9090:9090"
+    volumes :
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks :
+      - ppurisam_network
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    extra_hosts:
+      host.docker.internal: host-gateway
+
+  grafana :
+    image : grafana/grafana:latest
+    container_name : grafana
+    ports :
+      - "3100:3100"
+    volumes:
+      - ./grafana:/etc/grafana/provisioning
+      - ./grafana/data:/var/lib/grafana
+    networks :
+      - ppurisam_network
+    environment:
+      - GF_SERVER_HTTP_PORT=3100
 
 networks:
   ppurisam_network:
