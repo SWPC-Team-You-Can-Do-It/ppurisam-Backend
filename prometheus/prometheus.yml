@@ -7,3 +7,8 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'
     static_configs:
       - targets: ['host.docker.internal:8080']
+
+  # Nginx Exporter 메트릭 수집
+  - job_name: 'nginx'
+    static_configs:
+      - targets: [ 'nginx_prometheus_exporter:9113' ] # Nginx Exporter 컨테이너와 포트
