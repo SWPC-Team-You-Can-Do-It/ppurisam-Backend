@@ -44,11 +44,6 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         // 뿌리오 관련 요청인 경우 추가 토큰 적용
         if (request.getRequestURI().startsWith("/api/ppurio/")) {
             String ppurioToken = request.getHeader("Authorization-ppurio");
-
-            // 토큰 검증 메서드 호출
-            if (ppurioToken == null || !isValidPpurioToken(ppurioToken)) {
-                throw new RuntimeException("Ppurio Token 인증 실패");
-            }
         }
 
         // 토큰이 없거나 형식이 올바르지 않은 경우 오류 처리
@@ -73,10 +68,5 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
 
         // Token 검증 실패
         throw new RuntimeException("인증 실패");
-    }
-
-    // 뿌리오 토큰 검증 메서드 예시 - 클래스 외부에 별도로 추가
-    private boolean isValidPpurioToken(String ppurioToken) {
-        return ppurioToken.equals("expected_value"); // 예시 값 비교
     }
 }

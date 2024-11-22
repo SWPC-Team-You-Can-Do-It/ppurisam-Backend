@@ -49,7 +49,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     //Ppurio 관련 주소
     private final List<String> PPURIO = List.of(
-            "/api/ppurio/send",
+            //"/api/ppurio/send",
             "/api/ppurio/token" // 추가된 엔드포인트
     );
 
