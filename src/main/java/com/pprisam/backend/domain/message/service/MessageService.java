@@ -7,6 +7,7 @@ import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
 import com.pprisam.backend.domain.message.repository.MessageEntity;
 import com.pprisam.backend.domain.message.repository.MessageRepository;
+import com.pprisam.backend.domain.message.repository.document.MessageDocument;
 import com.pprisam.backend.domain.ppurio.model.SendRequest;
 import com.pprisam.backend.domain.ppurio.model.Target;
 import com.pprisam.backend.domain.receiver.repository.ReceiverEntity;
@@ -37,6 +38,7 @@ public class MessageService {
     private final UserService userService;
     private final MessageConverter messageConverter;
     private final ImageRepository imageRepository;
+    private final MessageESService messageESService;
 
     public MessageResponse saveMessage(SendRequest sendRequest, User user, Boolean sendStatus) {
 
@@ -100,6 +102,11 @@ public class MessageService {
         }
 
         var messageResponse=messageConverter.toMessageResponse(savedMessage);
+
+        // 엘라스틱 서치 저장
+        MessageDocument messageDocument = messageConverter.toDocument(messageEntity);
+        messageESService.save(messageDocument);
+        //
 
         return messageResponse;
     }
@@ -165,5 +172,27 @@ public class MessageService {
 
         // 맵의 값들을 리스트로 변환하여 반환
         return new ArrayList<>(messageMap.values());
+    }
+
+    // 문자 검색 결과에 대해 조회
+    public MessagePageResponse findAllSearchResult(Pageable pageable, Page<MessageDocument> searchResults) {
+        // 엘라스틱 서치의 겸색결과에서 문자 ID만 추출
+        List<Long> searchResultIds = searchResults.stream()
+                .map(msg -> msg.getId())
+                .collect(Collectors.toList());
+
+        // 문자ID로 다시 문자 조회 (N+1문제로 인해 수신자 리스트 Fetch Join)
+        List<MessageEntity> messagesWithReceivers = messageRepository.findMessagesWithReceiversByIds(searchResultIds);
+
+        // 문자ID로 다시 문자 조회 (N+1문제로 인해 이미지 Fetch Join)
+        List<MessageEntity> messagesWithImages = messageRepository.findMessagesWithImagesByIds(searchResultIds);
+
+        // 결과 합치기
+        List<MessageEntity> combineMessages = combineMessage(messagesWithReceivers, messagesWithImages);
+
+        // 결과 반환
+        return messageConverter.toMessageResponsePage(
+                combineMessages, pageable, searchResults.getTotalElements()
+        );
     }
 }

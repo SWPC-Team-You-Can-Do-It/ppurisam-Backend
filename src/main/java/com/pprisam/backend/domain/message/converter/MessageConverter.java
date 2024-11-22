@@ -4,11 +4,11 @@ import com.pprisam.backend.domain.image.converter.ImageConverter;
 import com.pprisam.backend.domain.message.model.MessagePageResponse;
 import com.pprisam.backend.domain.message.model.MessageResponse;
 import com.pprisam.backend.domain.message.repository.MessageEntity;
+import com.pprisam.backend.domain.message.repository.document.MessageDocument;
 import com.pprisam.backend.domain.receiver.converter.ReceiverConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -65,5 +65,15 @@ public class MessageConverter {
                 .totalElements(totalElements)
                 .build()
                 ;
+    }
+
+    // 엘라스틱 서치 저장용
+    public MessageDocument toDocument(MessageEntity messageEntity) {
+        return MessageDocument.builder()
+                .id(messageEntity.getId())
+                .title(messageEntity.getTitle())
+                .content(messageEntity.getContent())
+                .userId(messageEntity.getUser().getId())
+                .build();
     }
 }
