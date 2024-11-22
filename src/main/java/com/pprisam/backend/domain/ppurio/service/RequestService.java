@@ -1,7 +1,9 @@
 package com.pprisam.backend.domain.ppurio.service;
 
+import com.pprisam.backend.domain.message.service.MessageService;
 import com.pprisam.backend.domain.ppurio.model.SendRequest;
 import com.pprisam.backend.domain.ppurio.model.Target;
+import com.pprisam.backend.domain.user.model.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,12 @@ public class RequestService {
 
     private final RestTemplate restTemplate;
     private final PpurioAuthService ppurioAuthService;
+    private final MessageService messageService;
 
-    public RequestService(RestTemplate restTemplate, PpurioAuthService ppurioAuthService) {
+    public RequestService(RestTemplate restTemplate, PpurioAuthService ppurioAuthService, MessageService messageService) {
         this.restTemplate = restTemplate;
         this.ppurioAuthService = ppurioAuthService;
+        this.messageService=messageService;
     }
 
     /**
@@ -33,7 +37,7 @@ public class RequestService {
      *
      * @param sendRequest MMS/SMS 발송 요청 데이터
      */
-    public void requestSend(SendRequest sendRequest) {
+    public void requestSend(SendRequest sendRequest, User user) {
         String accessToken = ppurioAuthService.getAccessToken().getToken();
 
         Map<String, Object> sendParams;
@@ -59,10 +63,13 @@ public class RequestService {
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 System.out.println("Message sent successfully: " + response.getBody());
+                messageService.saveMessage(sendRequest, user, true);
             } else {
+                messageService.saveMessage(sendRequest, user, false);
                 throw new RuntimeException("메시지 발송 실패: " + response.getStatusCode());
             }
         } catch (Exception e) {
+            messageService.saveMessage(sendRequest, user, false);
             throw new RuntimeException("메시지 발송 중 오류 발생: " + e.getMessage(), e);
         }
     }
