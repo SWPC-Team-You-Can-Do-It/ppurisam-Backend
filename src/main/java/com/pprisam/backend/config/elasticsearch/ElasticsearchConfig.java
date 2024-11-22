@@ -17,7 +17,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import java.util.Arrays;
 
 @Configuration
-@EnableElasticsearchRepositories(basePackages = "com.pprisam.backend.domain.contact.repository")
+@EnableElasticsearchRepositories(basePackages = {"com.pprisam.backend.domain.contact.repository", "com.pprisam.backend.domain.message.repository"})
 public class ElasticsearchConfig {
 
     @Value("${spring.elasticsearch.uris}")
