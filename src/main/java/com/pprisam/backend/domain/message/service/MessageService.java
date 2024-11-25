@@ -44,7 +44,7 @@ public class MessageService {
 
         String content = sendRequest.getContent();
         String sendTimeStr = sendRequest.getSendTime() != null ? sendRequest.getSendTime() : LocalDateTime.now().toString();
-        String title =  sendRequest.getTitle() !=null ? sendRequest.getTitle() : "제목없음";
+        String subject =  sendRequest.getSubject() !=null ? sendRequest.getSubject() : "제목없음";
         String from = sendRequest.getFrom() != null ? sendRequest.getFrom() : "";
 
         // sendTime 문자열을 LocalDateTime으로 변환
@@ -57,7 +57,7 @@ public class MessageService {
         var messageEntity=MessageEntity.builder()
                 .user(userEntity)
                 .content(content)
-                .title(title)
+                .title(subject)
                 .sendAt(sendAt)
                 .status(sendStatus)
                 .fromPhoneNumber(from)
